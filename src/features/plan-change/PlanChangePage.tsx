@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ApiError } from '../../api/client';
 import { PLANS, type PlanId, type Preview } from '../../types/plan';
 import { ConfirmChange } from './ConfirmChange';
@@ -45,6 +45,12 @@ export function PlanChangePage({ subscriptionId }: PlanChangePageProps) {
   const activePreview: Preview | undefined =
     wantsChange && preview.data?.planId === selectedPlanId ? preview.data : undefined;
   const isExpired = useQuoteExpired(activePreview?.quoteId, activePreview?.expiresAt);
+  const { refetch: refetchPreview } = preview;
+
+  // An expired quote cannot be confirmed, so ask the service for a new one.
+  useEffect(() => {
+    if (isExpired) void refetchPreview();
+  }, [isExpired, refetchPreview]);
 
   if (subscription.isPending) {
     return <p role="status">Učitavanje...</p>;
@@ -106,7 +112,9 @@ export function PlanChangePage({ subscriptionId }: PlanChangePageProps) {
         {activePreview ? (
           <PreviewSummary preview={activePreview} plan={planById(activePreview.planId)} />
         ) : null}
-        {activePreview && isExpired ? <p role="status">Obračun je istekao.</p> : null}
+        {activePreview && isExpired ? (
+          <p role="status">Obračun je istekao. Učitavamo novi.</p>
+        ) : null}
       </section>
 
       <ConfirmChange

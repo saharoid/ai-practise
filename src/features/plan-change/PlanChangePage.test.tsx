@@ -29,10 +29,21 @@ describe('PlanChangePage', () => {
     expect(screen.getByRole('radio', { name: /Basic/ })).toBeChecked();
   });
 
-  it('selecting current plan does not enable confirm', async () => {
+  it('selecting current plan again does not request a preview or enable confirm', async () => {
+    const requested: string[] = [];
+    server.events.on('request:start', ({ request }) => {
+      const url = new URL(request.url);
+      if (url.pathname.endsWith('/preview')) requested.push(url.searchParams.get('planId') ?? '');
+    });
     const { user } = await renderPage();
+    await user.click(screen.getByRole('radio', { name: /Pro/ }));
+    await within(summary()).findByText(eur(3900));
     await user.click(screen.getByRole('radio', { name: /Basic/ }));
+
+    expect(screen.getByRole('radio', { name: /Basic/ })).toBeChecked();
     expect(confirmButton()).toBeDisabled();
+    expect(within(summary()).queryByText(eur(3900))).not.toBeInTheDocument();
+    expect(requested).toEqual(['pro']);
   });
 
   it('selecting a plan shows its amount', async () => {
@@ -65,13 +76,21 @@ describe('PlanChangePage', () => {
     expect(capturedChangeRequests).toHaveLength(1);
   });
 
-  it('expired preview disables confirm', async () => {
+  it('expired quote disables confirm and loads a new one', async () => {
     control.quoteTtlMs = 0;
     const { user } = await renderPage();
     await user.click(screen.getByRole('radio', { name: /Pro/ }));
     await within(summary()).findByText(eur(3900));
     await waitFor(() => expect(confirmButton()).toBeDisabled());
-    expect(screen.getByText('Obračun je istekao.')).toBeInTheDocument();
+    const expiredQuotes = db.quotes.size;
+
+    // The next quote the service issues is valid again.
+    control.quoteTtlMs = 300_000;
+    await waitFor(() => expect(confirmButton()).toBeEnabled());
+    expect(db.quotes.size).toBeGreaterThan(expiredQuotes);
+
+    await user.click(confirmButton());
+    expect(await screen.findByText('Plan je promenjen na Pro.')).toBeInTheDocument();
   });
 
   it('quote that expires before confirm shows message and loads new preview', async () => {

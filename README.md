@@ -10,7 +10,8 @@ Pravila za agente: `CLAUDE.md`.
 
 ## Pokretanje
 
-Provereno sa Node 22.23.4 i npm 10.9.9 (Linux). Na Mac-u još nije pokrenuto.
+Potreban je Node `^22.22.2`, `^24.15.0` ili `>=26` (zahtevi Vite, MSW i jsdom). Provereno sa
+Node 22.23.4 i npm 10.9.9 (Linux). Na Mac-u još nije pokrenuto.
 
 ```bash
 npm ci
