@@ -12,6 +12,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  server.events.removeAllListeners();
   resetDb();
   resetControl();
 });
