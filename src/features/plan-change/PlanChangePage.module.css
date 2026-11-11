@@ -1,0 +1,8 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.preview {
+  min-height: 4rem;
+}
