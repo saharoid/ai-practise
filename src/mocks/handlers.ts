@@ -1,5 +1,10 @@
 import { delay, http, HttpResponse, type DefaultBodyType, type PathParams } from 'msw';
-import type { ApiErrorDto, ChangeRequestDto, PreviewDto, SubscriptionDto } from '../api/types';
+import type {
+  ApiErrorDto,
+  ChangeRequestDto,
+  NestedPreviewDto,
+  SubscriptionDto,
+} from '../api/types';
 import { PLANS, type PlanId } from '../types/plan';
 import { control } from './control';
 import { capturedChangeRequests, db, PRICES } from './db';
@@ -29,7 +34,7 @@ export const handlers = [
     },
   ),
 
-  http.get<PathParams, DefaultBodyType, PreviewDto | ApiErrorDto>(
+  http.get<PathParams, DefaultBodyType, NestedPreviewDto | ApiErrorDto>(
     '/api/subscriptions/:id/preview',
     async ({ params, request }) => {
       await delay(control.delayMs);
@@ -51,12 +56,11 @@ export const handlers = [
       };
       db.quotes.set(quoteId, quote);
 
-      return HttpResponse.json<PreviewDto>({
+      return HttpResponse.json<NestedPreviewDto>({
         subscriptionId: quote.subscriptionId,
-        planId: quote.planId,
+        plan: { id: quote.planId },
         quoteId,
-        amountMinor: quote.amountMinor,
-        currency: quote.currency,
+        dueNow: { amountMinor: quote.amountMinor, currency: quote.currency },
         effectiveDate: nextBillingDate(new Date(now)),
         expiresAt: new Date(quote.expiresAt).toISOString(),
       });

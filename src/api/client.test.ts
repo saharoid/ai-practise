@@ -6,9 +6,30 @@ import { ApiError, confirmChange, getPreview } from './client';
 describe('api client', () => {
   it('getPreview returns normalized preview', async () => {
     const preview = await getPreview('sub_1', 'pro');
-    expect(preview.planId).toBe('pro');
+    expect(preview.plan).toEqual({ id: 'pro' });
     expect(preview.dueNow).toEqual({ amountMinor: 3900, currency: 'EUR' });
     expect(preview).not.toHaveProperty('amountMinor');
+  });
+
+  it('getPreview normalizes a legacy flat response the same way', async () => {
+    server.use(
+      http.get('/api/subscriptions/:id/preview', () =>
+        HttpResponse.json({
+          subscriptionId: 'sub_1',
+          planId: 'pro',
+          quoteId: 'quote_legacy',
+          amountMinor: 3900,
+          currency: 'EUR',
+          effectiveDate: '2026-12-01',
+          expiresAt: '2026-11-11T13:05:00.000Z',
+        }),
+      ),
+    );
+    const preview = await getPreview('sub_1', 'pro');
+    expect(preview.plan).toEqual({ id: 'pro' });
+    expect(preview.dueNow).toEqual({ amountMinor: 3900, currency: 'EUR' });
+    expect(preview.quoteId).toBe('quote_legacy');
+    expect(preview).not.toHaveProperty('planId');
   });
 
   it('confirmChange throws ApiError with code QUOTE_EXPIRED on 409', async () => {

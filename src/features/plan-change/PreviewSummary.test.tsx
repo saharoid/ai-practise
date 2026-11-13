@@ -9,7 +9,7 @@ describe('PreviewSummary', () => {
         plan={{ id: 'pro', name: 'Pro' }}
         preview={{
           subscriptionId: 'sub_1',
-          planId: 'pro',
+          plan: { id: 'pro' },
           quoteId: 'quote_1',
           dueNow: { amountMinor: 3900, currency: 'EUR' },
           effectiveDate: '2026-12-01',

@@ -43,7 +43,7 @@ export function PlanChangePage({ subscriptionId }: PlanChangePageProps) {
   const wantsChange = selectedPlanId !== null && selectedPlanId !== currentPlanId;
   // Only a preview for the selected plan may be shown or confirmed.
   const activePreview: Preview | undefined =
-    wantsChange && preview.data?.planId === selectedPlanId ? preview.data : undefined;
+    wantsChange && preview.data?.plan.id === selectedPlanId ? preview.data : undefined;
   const isExpired = useQuoteExpired(activePreview?.quoteId, activePreview?.expiresAt);
   const { refetch: refetchPreview } = preview;
 
@@ -110,7 +110,7 @@ export function PlanChangePage({ subscriptionId }: PlanChangePageProps) {
           </div>
         ) : null}
         {activePreview ? (
-          <PreviewSummary preview={activePreview} plan={planById(activePreview.planId)} />
+          <PreviewSummary preview={activePreview} plan={planById(activePreview.plan.id)} />
         ) : null}
         {activePreview && isExpired ? (
           <p role="status">Obračun je istekao. Učitavamo novi.</p>

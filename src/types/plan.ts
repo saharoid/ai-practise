@@ -19,7 +19,7 @@ export interface Money {
 /** Normalized preview model used by components. */
 export interface Preview {
   subscriptionId: string;
-  planId: PlanId;
+  plan: { id: PlanId };
   quoteId: string;
   dueNow: Money;
   effectiveDate: string;

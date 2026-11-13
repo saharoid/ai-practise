@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { PreviewDto, SubscriptionDto } from '../api/types';
+import type { NestedPreviewDto, SubscriptionDto } from '../api/types';
 import { control } from './control';
 import { capturedChangeRequests } from './db';
 
 const url = (path: string) => new URL(path, window.location.origin);
 
-async function getPreviewDto(planId: string): Promise<PreviewDto> {
+async function getPreviewDto(planId: string): Promise<NestedPreviewDto> {
   const response = await fetch(url(`/api/subscriptions/sub_1/preview?planId=${planId}`));
-  return (await response.json()) as PreviewDto;
+  return (await response.json()) as NestedPreviewDto;
 }
 
 function postChange(quoteId: string) {
@@ -31,14 +31,14 @@ describe('mock handlers', () => {
     expect(await response.json()).toEqual({ code: 'NOT_FOUND' });
   });
 
-  it('preview returns flat dto with price for plan', async () => {
+  it('preview returns nested dto with price for plan', async () => {
     const dto = await getPreviewDto('pro');
     expect(dto).toMatchObject({
       subscriptionId: 'sub_1',
-      planId: 'pro',
-      amountMinor: 3900,
-      currency: 'EUR',
+      plan: { id: 'pro' },
+      dueNow: { amountMinor: 3900, currency: 'EUR' },
     });
+    expect(dto).not.toHaveProperty('planId');
     expect(dto.quoteId).toMatch(/^quote_/);
     expect(dto.effectiveDate).toMatch(/^\d{4}-\d{2}-01$/);
     expect(Date.parse(dto.expiresAt)).toBeGreaterThan(Date.now());

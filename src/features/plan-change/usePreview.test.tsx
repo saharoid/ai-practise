@@ -27,7 +27,7 @@ describe('usePreview', () => {
   it('requests preview with key per plan', async () => {
     const { wrapper, queryClient } = createWrapper();
     const { result } = renderHook(() => usePreview('sub_1', 'pro', 'basic'), { wrapper });
-    await waitFor(() => expect(result.current.data?.planId).toBe('pro'));
+    await waitFor(() => expect(result.current.data?.plan.id).toBe('pro'));
     expect(queryClient.getQueryData(['preview', 'sub_1', 'pro'])).toEqual(result.current.data);
   });
 
